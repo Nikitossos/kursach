@@ -1,17 +1,34 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState, useContext} from 'react';
 import {Button, Card, Col, Container, Image, Row} from "react-bootstrap";
 import bigStar from '../assets/bigStar.png'
 import {useParams} from 'react-router-dom'
 import {fetchOneDevice} from "../http/deviceAPI";
+import {Context} from "../index";
+
+import { toJS } from 'mobx'
+
+import { addItemToBasket } from "../http/basketAPI";
+
 
 import './DevicePage.css'
 
 const DevicePage = () => {
+    const {user} = useContext(Context)
     const [device, setDevice] = useState({info: []})
     const {id} = useParams()
     useEffect(() => {
         fetchOneDevice(id).then(data => setDevice(data))
     }, [])
+
+    const onAddItemToBasket = useCallback(async () => {
+        const userData = toJS(user.getUser());
+
+        await addItemToBasket({
+            itemId: id,
+            userId: userData.id,  
+        });
+        alert('Товар был добавлен в корзину!');
+    }, [id, user]);
 
     return (
         <Container className="mt-3">
@@ -36,7 +53,7 @@ const DevicePage = () => {
                         style={{width: 300, height: 300, fontSize: 32, border: '5px solid lightgray'}}
                     >
                         <h3>От: {device.price} руб.</h3>
-                        <Button variant={"outline-dark"}>Добавить в корзину</Button>
+                        <Button onClick={onAddItemToBasket} variant={"outline-dark"}>Добавить в корзину</Button>
                     </Card>
                 </Col>
             </Row>
