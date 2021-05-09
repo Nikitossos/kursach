@@ -1,6 +1,6 @@
 const uuid = require('uuid')
 const path = require('path');
-const { Basket } = require('../models/models')
+const { Basket, Device } = require('../models/models')
 const ApiError = require('../error/ApiError');
 
 class BasketController {
@@ -36,7 +36,17 @@ class BasketController {
               where: { userId },
           },
       )
-      return res.json(basket || {})
+
+      const itemsData = basket.itemsList.map((deviceId) => {
+        const device = await Device.findOne({
+              where: { id: deviceId },
+              include: [{model: DeviceInfo, as: 'info'}]
+        });
+
+        return device;
+      });
+
+      return res.json(itemsData || {})
   }
 }
 
